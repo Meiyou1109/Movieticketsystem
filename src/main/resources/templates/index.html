@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Hệ thống bán vé phim</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 40px;
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-between;
+            margin-left: 100px;
+        }
+
+        .seat-section {
+            flex: 2;
+            padding-left: 40px;
+        }
+
+        .info-panel {
+            width: 300px;
+            margin-top: -600px;
+            margin-left: auto;
+            margin-right: 300px;
+        }
+
+        .seat-grid-with-labels {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .row-label {
+            width: 30px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .seat {
+            width: 50px;
+            height: 50px;
+            line-height: 50px;
+            border: 2px solid #999;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            background-color: white;
+            text-align: center;
+        }
+
+        .seat.sold {
+            background-color: #aaa;
+            color: #fff;
+            cursor: not-allowed;
+        }
+
+        .seat.selected {
+            background-color: #f58020;
+        }
+
+        .message {
+            margin-top: 20px;
+            font-weight: bold;
+            color: green;
+        }
+
+        .submit-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+        }
+
+        .summary {
+            margin-top: 0px;
+        }
+
+        .summary h3 {
+            margin-bottom: 10px;
+        }
+
+        .movie-toolbar {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .movie-select-wrapper {
+            position: relative;
+            width: 320px;
+            margin-bottom: 20px;
+        }
+
+        .selected-movie {
+            background-color: #f3f3f3;
+            padding: 10px 15px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+        }
+
+        .dropdown-arrow {
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .movie-dropdown {
+            position: absolute;
+            width: 100%;
+            max-height: 350px; 
+            overflow-y: auto; 
+            background-color: white;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            margin-top: 5px;
+            z-index: 10;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+
+        .movie-option {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            gap: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .movie-option:hover {
+            background-color: #eee;
+        }
+
+        .movie-option img {
+            width: 40px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .purchased-tickets {
+            margin-top: 30px;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+            width: 400px;
+            margin-left: 830px;
+        }
+        .purchased-tickets table, .purchased-tickets th, .purchased-tickets td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+        .purchased-tickets th {
+            background-color: #f0f0f0;
+        }
+
+
+    </style>
+</head>
+<body>
+ <div class="movie-toolbar">
+<div class="movie-select-wrapper">
+    <div class="selected-movie" id="selectedMovie" onclick="toggleMovieDropdown()">
+        <span id="selectedMovieTitle">🎬 Chọn phim: <span th:text="${selectedMovie}"></span></span>
+        <span class="dropdown-arrow">▼</span>
+    </div>
+    <div class="movie-dropdown" id="movieDropdown" style="display: none;">
+        <div class="movie-option" onclick="selectMovie('Avengers')">
+            <img src="/images/avengers.jpg" alt="Avengers">
+            <span>Avengers</span>
+        </div>
+        <div class="movie-option" onclick="selectMovie('Doraemon')">
+            <img src="/images/doraemon.jpg" alt="Doraemon">
+            <span>Doraemon</span>
+        </div>
+        <div class="movie-option" onclick="selectMovie('Oppenheimer')">
+            <img src="/images/oppenheimer.jpg" alt="Oppenheimer">
+            <span>Oppenheimer</span>
+        </div>
+        <div class="movie-option" onclick="selectMovie('Spiderman')">
+            <img src="/images/spiderman.jpg" alt="Spiderman">
+            <span>Spiderman</span>
+        </div>
+        <div class="movie-option" onclick="selectMovie('Minions')">
+            <img src="/images/minions.jpg" alt="Minions">
+            <span>Minions</span>
+        </div>
+        <div class="movie-option" onclick="selectMovie('Naruto')">
+            <img src="/images/naruto.jpg" alt="Naruto">
+            <span>Naruto</span>
+        </div>
+        <div class="movie-option" onclick="selectMovie('One Piece')">
+            <img src="/images/onepiece.jpg" alt="One Piece">
+            <span>One Piece</span>
+        </div>
+        <div class="movie-option" onclick="selectMovie('Elemental')">
+            <img src="/images/elemental.jpg" alt="Elemental">
+            <span>Elemental</span>
+        </div>
+        <div class="movie-option" onclick="selectMovie('Conan')">
+            <img src="/images/conan.jpg" alt="Conan">
+            <span>Conan</span>
+        </div>
+        <div class="movie-option" onclick="selectMovie('Dragon train')">
+            <img src="/images/dragontrain.jpg" alt="Dragon train">
+            <span>Dragon train</span>
+        </div>
+    </div>
+</div>
+
+<div class="movie-select-wrapper">
+    <div class="selected-movie" id="selectedTime" onclick="toggleTimeDropdown()">
+        <span id="selectedTimeLabel">🕒 Suất chiếu: 10:30</span>
+        <span class="dropdown-arrow">▼</span>
+    </div>
+    <div class="movie-dropdown" id="timeDropdown" style="display: none;">
+        <div class="movie-option" onclick="selectTime('10:30')">
+            <span>10:30</span>
+        </div>
+        <div class="movie-option" onclick="selectTime('15:30')">
+            <span>15:30</span>
+        </div>
+        <div class="movie-option" onclick="selectTime('18:00')">
+            <span>18:00</span>
+        </div>
+        <div class="movie-option" onclick="selectTime('20:30')">
+            <span>20:30</span>
+        </div>
+    </div>
+</div>
+</div>
+
+<h3>CINEMA</h3>
+<h3>Giá vé: <span>100</span> VND</h3>
+
+<div >
+<form action="/reserve" method="post" id="seatForm">
+    <div class="container">
+        <!-- Vùng chọn ghế -->
+        <div class="seat-section">
+            <div class="seat-grid-with-labels">
+                <div th:each="row : ${#numbers.sequence(0, 5)}" class="row">
+                    <div class="row-label" th:text="${'ABCDEF'.charAt(row)}"></div>
+                    <div th:each="col : ${#numbers.sequence(1, 10)}">
+                        <div class="seat"
+                             th:with="seatIndex=${row * 10 + col}"
+                             th:text="${col}"
+                             th:data-seat-number="${seatIndex}"
+                             th:classappend="${!seats[seatIndex - 1].available} ? ' sold' : ''">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-panel">
+            <div class="summary">
+                <h3>Phim:</h3>
+                <div style="margin-bottom: 10px;">
+                    <img id="moviePoster" src="/images/avengers.jpg" alt="poster" style="width: 100px; height: 150px; object-fit: cover; border-radius: 4px; margin-bottom: 5px;">
+                    <div id="infoMovie">Avengers</div>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px;">
+                    <div>
+                        <h3 style="margin: 0;">Suất chiếu:</h3>
+                        <div id="infoTime">10:30</div>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0;">Ghế đang chọn:</h3>
+                        <div id="selectedList">(Không có)</div>
+                    </div>
+                </div>
+
+            
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px;">
+                    <div>
+                        <h3 style="margin: 0;">Tổng cộng:</h3>
+                        <div id="totalAmount">0 VND</div>
+                    </div>
+
+                    <button class="submit-btn" type="button" id="buyBtn">Mua</button>
+                    
+                </div>
+
+            </div>
+
+                    <input type="hidden" name="seatNumbers" id="seatNumbers" />
+                    <input type="hidden" name="movieTitle" id="hiddenMovieTitle" />
+                    <input type="hidden" name="showtime" id="hiddenShowtime" />
+    </div>
+            
+</form>
+            <div class="purchased-tickets">
+                <h3>🎟️ Vé đã mua:</h3>
+                        
+                <div th:if="${#lists.isEmpty(tickets)}">
+                    <p>Chưa có vé nào.</p>
+                </div>
+            
+                <div th:if="${!#lists.isEmpty(tickets)}">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                        <tr>
+                            <th>Phim</th>
+                            <th>Suất</th>
+                            <th>Ghế</th>
+                            <th>Tổng</th>
+                            <th>Hủy</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="ticket : ${tickets}">
+                            <td th:text="${ticket.movieTitle}">Phim</td>
+                            <td th:text="${ticket.showtime}">Suất</td>
+                            <td th:text="${#strings.listJoin(ticket.seatLabels, ', ')}">Ghế</td>
+                            <td th:text="${ticket.totalPrice} + ' VND'">Tổng</td>
+                            <td>
+                                <form th:action="@{/cancel}" method="post" onsubmit="return confirm('Bạn có chắc muốn huỷ vé này?');">
+                                    <input type="hidden" name="movie" th:value="${ticket.movieTitle}" />
+                                    <input type="hidden" name="showtime" th:value="${ticket.showtime}" />
+                                    <input type="hidden" name="seats"
+                                        th:value="${#strings.listJoin(ticket.seatLabels, ',')}" />
+                                    <button type="submit" style="color: red;">Hủy</button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            
+
+</div>
+
+<script th:inline="javascript">
+  const seats = document.querySelectorAll('.seat:not(.sold)');
+  const seatNumbersInput = document.getElementById('seatNumbers');
+  const selectedList = document.getElementById('selectedList');
+  const totalAmount = document.getElementById('totalAmount');
+  const ticketPrice = /*[[${movie.ticketPrice}]]*/ 0;
+  const selectedSeats = new Set();
+
+  seats.forEach(seat => {
+      seat.addEventListener('click', () => {
+          const seatNumber = seat.getAttribute('data-seat-number');
+          if (selectedSeats.has(seatNumber)) {
+              seat.classList.remove('selected');
+              selectedSeats.delete(seatNumber);
+          } else {
+              seat.classList.add('selected');
+              selectedSeats.add(seatNumber);
+          }
+          updateSummary();
+      });
+  });
+
+  function getSeatLabel(seatNumber) {
+      const rowIndex = Math.floor((seatNumber - 1) / 10);
+      const colIndex = ((seatNumber - 1) % 10) + 1;
+      const rowChar = "ABCDEF"[rowIndex];
+      return rowChar + colIndex;
+  }
+
+  function updateSummary() {
+      const selectedArray = Array.from(selectedSeats);
+      seatNumbersInput.value = selectedArray.join(',');
+
+      const seatLabels = selectedArray.map(num => getSeatLabel(parseInt(num)));
+      selectedList.innerText = seatLabels.length > 0 ? seatLabels.join(', ') : '(Không có)';
+      totalAmount.innerText = (seatLabels.length * ticketPrice).toLocaleString('vi-VN') + ' VND';
+
+      const movie = document.getElementById('selectedMovieTitle').innerText.replace('🎬 Chọn phim: ', '');
+      document.getElementById('infoMovie').innerText = movie;
+      document.getElementById('moviePoster').src = `/images/${movie.toLowerCase().replaceAll(' ', '')}.jpg`;
+      const time = document.getElementById('selectedTimeLabel').innerText.replace('🕒 Suất chiếu: ', '');
+      document.getElementById('infoTime').innerText = time;
+  }
+
+</script>
+
+<script>
+    function toggleTimeDropdown() {
+        const dropdown = document.getElementById("timeDropdown");
+        dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
+    }
+
+    function selectTime(time) {
+    const movie = document.getElementById("selectedMovieTitle").innerText.replace("🎬 Chọn phim: ", "");
+    window.location.href = `/?movie=${encodeURIComponent(movie)}&showtime=${encodeURIComponent(time)}`;
+}
+
+</script>
+
+<script>
+    function toggleMovieDropdown() {
+        const dropdown = document.getElementById("movieDropdown");
+        dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
+    }
+
+    function selectMovie(title) {
+    const time = document.getElementById("selectedTimeLabel").innerText.replace("🕒 Suất chiếu: ", "");
+    window.location.href = `/?movie=${encodeURIComponent(title)}&showtime=${encodeURIComponent(time)}`;
+}
+
+</script>
+
+<script>
+document.getElementById("buyBtn").addEventListener("click", async function () {
+    const seatNumbers = Array.from(document.querySelectorAll(".seat.selected"))
+        .map(seat => seat.getAttribute("data-seat-number"));
+
+    if (seatNumbers.length === 0) {
+        alert("❗ Bạn chưa chọn ghế nào.");
+        return;
+    }
+
+    const movieTitle = document.getElementById("selectedMovieTitle").innerText.replace("🎬 Chọn phim: ", "");
+    const showtime = document.getElementById("selectedTimeLabel").innerText.replace("🕒 Suất chiếu: ", "");
+
+    const formData = new URLSearchParams();
+    formData.append("seatNumbers", seatNumbers.join(","));
+    formData.append("movieTitle", movieTitle);
+    formData.append("showtime", showtime);
+
+    const response = await fetch("/reserve", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: formData
+    });
+
+    const resultHtml = await response.text();
+
+    if (response.ok) {
+        alert("✅ Đặt vé thành công!");
+
+        seatNumbers.forEach(num => {
+            const seat = document.querySelector(`.seat[data-seat-number="${num}"]`);
+            seat.classList.remove("selected");
+            seat.classList.add("sold");
+            selectedSeats.delete(num);
+        });
+
+        updateSummary();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(resultHtml, "text/html");
+
+        const updatedTickets = doc.querySelector(".purchased-tickets");
+        const currentTickets = document.querySelector(".purchased-tickets");
+
+        if (updatedTickets && currentTickets) {
+            currentTickets.innerHTML = updatedTickets.innerHTML;
+        }
+
+    } else {
+        alert("❌ Có lỗi xảy ra. Vui lòng thử lại.");
+    }
+});
+</script>
+
+</body>
+</html>

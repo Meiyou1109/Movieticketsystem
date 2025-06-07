@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Hệ thống bán vé phim</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 40px;
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-between;
+            margin-left: 100px;
+        }
+
+        .seat-section {
+            flex: 2;
+            padding-left: 40px;
+        }
+
+        .info-panel {
+            width: 300px;
+            margin-top: -500px;
+            margin-left: auto;
+            margin-right: 300px;
+        }
+
+        .seat-grid-with-labels {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .row-label {
+            width: 30px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .seat {
+            width: 50px;
+            height: 50px;
+            line-height: 50px;
+            border: 2px solid #999;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            background-color: white;
+            text-align: center;
+        }
+
+        .seat.sold {
+            background-color: #aaa;
+            color: #fff;
+            cursor: not-allowed;
+        }
+
+        .seat.selected {
+            background-color: #f58020;
+        }
+
+        .message {
+            margin-top: 20px;
+            font-weight: bold;
+            color: green;
+        }
+
+        .submit-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+        }
+
+        .summary {
+            margin-top: 0px;
+        }
+
+        .summary h3 {
+            margin-bottom: 10px;
+        }
+
+        .movie-toolbar {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        /* ==== Dropdown chọn phim ==== */
+        .movie-select-wrapper {
+            position: relative;
+            width: 320px;
+            margin-bottom: 20px;
+        }
+
+        .selected-movie {
+            background-color: #f3f3f3;
+            padding: 10px 15px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+        }
+
+        .dropdown-arrow {
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .movie-dropdown {
+            position: absolute;
+            width: 100%;
+            max-height: 350px;         /* hiển thị vừa ~5 phim */
+            overflow-y: auto;          /* cho phép cuộn dọc */
+            background-color: white;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            margin-top: 5px;
+            z-index: 10;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+
+        .movie-option {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            gap: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .movie-option:hover {
+            background-color: #eee;
+        }
+
+        .movie-option img {
+            width: 40px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ====== Dropdown chọn phim ====== -->
+ <div class="movie-toolbar">
+<div class="movie-select-wrapper">
+    <div class="selected-movie" id="selectedMovie" onclick="toggleMovieDropdown()">
+        <span id="selectedMovieTitle">🎬 Chọn phim: <span th:text="${movie.title}"></span></span>
+        <span class="dropdown-arrow">▼</span>
+    </div>
+    <div class="movie-dropdown" id="movieDropdown" style="display: none;">
+        <div class="movie-option" onclick="selectMovie('Avengers')">
+            <img src="/images/avengers.jpg" alt="Avengers">
+            <span>Avengers</span>
+        </div>
+        <div class="movie-option" onclick="selectMovie('Doraemon')">
+            <img src="/images/doraemon.jpg" alt="Doraemon">
+            <span>Doraemon</span>
+        </div>
+        <div class="movie-option" onclick="selectMovie('Oppenheimer')">
+            <img src="/images/oppenheimer.jpg" alt="Oppenheimer">
+            <span>Oppenheimer</span>
+        </div>
+        <div class="movie-option" onclick="selectMovie('Spiderman')">
+            <img src="/images/spiderman.jpg" alt="Spiderman">
+            <span>Spiderman</span>
+        </div>
+        <div class="movie-option" onclick="selectMovie('Minions')">
+            <img src="/images/minions.jpg" alt="Minions">
+            <span>Minions</span>
+        </div>
+        <div class="movie-option" onclick="selectMovie('Naruto')">
+            <img src="/images/naruto.jpg" alt="Naruto">
+            <span>Naruto</span>
+        </div>
+        <div class="movie-option" onclick="selectMovie('One Piece')">
+            <img src="/images/onepiece.jpg" alt="One Piece">
+            <span>One Piece</span>
+        </div>
+        <div class="movie-option" onclick="selectMovie('Elemental')">
+            <img src="/images/elemental.jpg" alt="Elemental">
+            <span>Elemental</span>
+        </div>
+        <div class="movie-option" onclick="selectMovie('Conan')">
+            <img src="/images/conan.jpg" alt="Conan">
+            <span>Conan</span>
+        </div>
+        <div class="movie-option" onclick="selectMovie('Dragon train')">
+            <img src="/images/dragontrain.jpg" alt="Dragon train">
+            <span>Dragon train</span>
+        </div>
+    </div>
+</div>
+
+<div class="movie-select-wrapper">
+    <div class="selected-movie" id="selectedTime" onclick="toggleTimeDropdown()">
+        <span id="selectedTimeLabel">🕒 Suất chiếu: 10:30</span>
+        <span class="dropdown-arrow">▼</span>
+    </div>
+    <div class="movie-dropdown" id="timeDropdown" style="display: none;">
+        <div class="movie-option" onclick="selectTime('10:30')">
+            <span>10:30</span>
+        </div>
+        <div class="movie-option" onclick="selectTime('15:30')">
+            <span>15:30</span>
+        </div>
+        <div class="movie-option" onclick="selectTime('18:00')">
+            <span>18:00</span>
+        </div>
+        <div class="movie-option" onclick="selectTime('20:30')">
+            <span>20:30</span>
+        </div>
+    </div>
+</div>
+</div>
+
+<h3>Thể loại: <span th:text="${movie.genre}"></span></h3>
+<h3>Giá vé: <span th:text="${movie.ticketPrice}"></span> VND</h3>
+
+<form action="/reserve" method="post" id="seatForm">
+    <div class="container">
+        <!-- Vùng chọn ghế -->
+        <div class="seat-section">
+            <div class="seat-grid-with-labels">
+                <div th:each="row : ${#numbers.sequence(0, 5)}" class="row">
+                    <div class="row-label" th:text="${'ABCDEF'.charAt(row)}"></div>
+                    <div th:each="col : ${#numbers.sequence(1, 10)}">
+                        <div class="seat"
+                             th:with="seatIndex=${row * 10 + col}"
+                             th:text="${col}"
+                             th:data-seat-number="${seatIndex}"
+                             th:classappend="${!seats[seatIndex - 1].available} ? ' sold' : ''">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-panel">
+            <div class="summary">
+                <h3>Phim:</h3>
+                <div style="margin-bottom: 10px;">
+                    <img id="moviePoster" src="/images/avengers.jpg" alt="poster" style="width: 100px; height: 150px; object-fit: cover; border-radius: 4px; margin-bottom: 5px;">
+                    <div id="infoMovie">Avengers</div>
+                </div>
+            
+                <h3>Suất chiếu:</h3>
+                <div id="infoTime" style="margin-bottom: 10px;">10:30</div>
+            
+                <h3>Ghế đang chọn:</h3>
+                <div id="selectedList">(Không có)</div>
+            
+                <h3>Tổng cộng:</h3>
+                <div id="totalAmount">0 VND</div>
+            </div>
+
+
+
+            <input type="hidden" name="seatNumbers" id="seatNumbers" />
+            <button class="submit-btn" type="submit">Tiếp tục</button>
+        </div>
+
+    <div class="message" th:text="${message}"></div>
+</form>
+
+<!-- ===== JavaScript xử lý chọn ghế + dropdown ===== -->
+<script th:inline="javascript">
+    const seats = document.querySelectorAll('.seat:not(.sold)');
+    const seatNumbersInput = document.getElementById('seatNumbers');
+    const selectedList = document.getElementById('selectedList');
+    const totalAmount = document.getElementById('totalAmount');
+    const ticketPrice = /*[[${movie.ticketPrice}]]*/ 0;
+    const selectedSeats = new Set();
+
+    seats.forEach(seat => {
+        seat.addEventListener('click', () => {
+            const seatNumber = seat.getAttribute('data-seat-number');
+            if (selectedSeats.has(seatNumber)) {
+                seat.classList.remove('selected');
+                selectedSeats.delete(seatNumber);
+            } else {
+                seat.classList.add('selected');
+                selectedSeats.add(seatNumber);
+            }
+            updateSummary();
+        });
+    });
+
+    function getSeatLabel(seatNumber) {
+    const rowIndex = Math.floor((seatNumber - 1) / 10);
+    const colIndex = ((seatNumber - 1) % 10) + 1;
+    const rowChar = "ABCDEF"[rowIndex];
+    return rowChar + colIndex;
+    }
+
+    function updateSummary() {
+    const selectedArray = Array.from(selectedSeats);
+    seatNumbersInput.value = selectedArray.join(',');
+
+    // Hiển thị A1, B5, ...
+    const seatLabels = selectedArray.map(num => getSeatLabel(parseInt(num)));
+    selectedList.innerText = seatLabels.length > 0 ? seatLabels.join(', ') : '(Không có)';
+
+    // Tổng tiền
+    totalAmount.innerText = (seatLabels.length * ticketPrice).toLocaleString('vi-VN') + ' VND';
+
+    // Cập nhật phim & suất chiếu
+    const movie = document.getElementById('selectedMovieTitle').innerText.replace('🎬 Chọn phim: ', '');
+    document.getElementById('infoMovie').innerText = movie;
+    document.getElementById('moviePoster').src = `/images/${movie.toLowerCase().replaceAll(' ', '')}.jpg`;
+    const time = document.getElementById('selectedTimeLabel').innerText.replace('Suất chiếu: ', '');
+    document.getElementById('infoMovie').innerText = movie;
+    document.getElementById('infoTime').innerText = time;
+    }
+
+
+    document.getElementById('seatForm').addEventListener('submit', (e) => {
+        seatNumbersInput.value = Array.from(selectedSeats).join(',');
+    });
+
+    function toggleMovieDropdown() {
+        const dropdown = document.getElementById("movieDropdown");
+        dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
+    }
+
+    function selectMovie(title) {
+        document.getElementById("selectedMovieTitle").innerText = `🎬 Chọn phim: ${title}`;
+        document.getElementById("movieDropdown").style.display = "none";
+        // (Tuỳ chọn) gửi dữ liệu chọn phim về server nếu muốn
+    }
+</script>
+
+<script>
+    function toggleTimeDropdown() {
+        const dropdown = document.getElementById("timeDropdown");
+        dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
+    }
+
+    function selectTime(time) {
+        document.getElementById("selectedTimeLabel").innerText = `🕒 Suất chiếu: ${time}`;
+        document.getElementById("timeDropdown").style.display = "none";
+    }
+</script>
+
+
+</body>
+</html>
